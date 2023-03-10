@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { CreateStripeDto } from './dto/create-stripe.dto';
-import { UpdateStripeDto } from './dto/update-stripe.dto';
 import { ConfigService } from '@nestjs/config';
 import { Stripe } from 'stripe';
+import { CreateTransactionDto } from 'src/transactions/dto/create-transaction.dto';
 import { TransactionsService } from 'src/transactions/transactions.service';
 
 @Injectable()
@@ -10,6 +9,7 @@ export class StripeService {
   private stripe: Stripe;
   constructor(
     readonly configService: ConfigService,
+    readonly transcations:TransactionsService
   ) {
     this.stripe = new Stripe(configService.get<string>('STRIPE_SECRET_KEY'), {
       apiVersion: '2022-11-15',
@@ -19,12 +19,12 @@ export class StripeService {
   async createCheckoutSession( stripePriceId:string,  productName:string,userId:number,licenseId:number,templateId:number) {
     const session = await this.stripe.checkout.sessions.create({
       success_url:
-        'http://localhost:3000/success?session_id={CHECKOUT_SESSION_ID}',
+        'http://localhost:3000/stripe/verify/?session_id={CHECKOUT_SESSION_ID}',
       cancel_url: 'http://localhost:3000/cancel',
       line_items: [{ price:stripePriceId, quantity: 1 }],
       mode: 'payment',
       metadata: {
-        userId,productName,licenseId, templateId     
+        userId,productName,licenseId, templateId,   
       },
     });
 
@@ -33,36 +33,54 @@ export class StripeService {
 
   async createPaymentIntent(session: any) {
     const paymentIntent = await this.stripe.paymentIntents.create({
+      
       amount: session.amount_total,
-      // customer: stripeCustomerId,
-      // payment_method: paymentMethodId,
-      currency: this.configService.get('STRIPE_CURRENCY'),
+      receipt_email: session.receipt_email,
+      
+      currency: 'usd',
       automatic_payment_methods: { enabled: true },
+      metadata:{
+        userId:session.metadata.userId,
+        licenseId: session.metadata.licenseId,
+        templateId: session.metadata.templateId,
+      
+      }
     });
-
+    const status= session.status
     const id = paymentIntent.id;
     return {
       session_id: session.id,
       session_url: session.url,
       paymentIntent,
       id,
+      status
     };
   }
 
   
 
-  async verifyPayment(sessionId: string) {
-    const retrieveSession= this.stripe.checkout.sessions.retrieve(sessionId)
+  async verifyPayment(session_id: string) {
+    const retrieveSession= this.stripe.checkout.sessions.retrieve(session_id)
     const  paymentIntentId= String((await retrieveSession).payment_intent)
     const verify = await this.stripe.paymentIntents.retrieve(paymentIntentId);
     if (verify && verify.status === 'succeeded') {
       console.log('success');
+      const transactionDto: CreateTransactionDto = {
+        method: 'Stripe',
+        usersId: Number((await retrieveSession).metadata.userId),
+        licensesId: Number((await retrieveSession).metadata.licenseId),
+        templatesId: Number((await retrieveSession).metadata.templateId),
+      };
+
+      this.transcations.create(transactionDto);
+
+      
     } else {
       console.log('fail');
     }
     return verify.status;
   }
-  async retrieveSession(sessionId: string) {
-    return this.stripe.checkout.sessions.retrieve(sessionId);
-  }
+//   async retrieveSession(session_id: string) {
+//     return this.stripe.checkout.sessions.retrieve(session_id);
+//   }
 }

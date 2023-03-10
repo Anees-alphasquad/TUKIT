@@ -14,14 +14,14 @@ export class StripeController {
    @Body('licenseId') licenseId: number, @Body('templateId') templateId: number) {
       return this.stripeService.createCheckoutSession(stripePriceId, productName, userId,licenseId,templateId)
   }
-  @Post('retrieve-checkout-session')
-    retrieveCheckOutSession (@Body('SessionId') SessionId: string) {
-        return this.stripeService.retrieveSession(SessionId)
-    }
-    @Post('verify')
-    verify(@Body() body: { sessionId: string }) {
-      const { sessionId } = body;
-      return this.stripeService.verifyPayment(sessionId);
+  // @Post('retrieve-checkout-session')
+  //   retrieveCheckOutSession (@Body('Session_id') Session_id: string) {
+  //       return this.stripeService.retrieveSession(Session_id)
+  //   }
+    @Get('verify')
+    verify(@Query() body: { session_id: string }) {
+      const { session_id } = body;
+      return this.stripeService.verifyPayment(session_id);
 
     }
 

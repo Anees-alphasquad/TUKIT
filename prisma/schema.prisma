@@ -26,7 +26,7 @@ model licenses {
   type         String
   price        Int
   description  String
-  users        users?       @relation(fields: [usersId], references: [id])
+  users        users?         @relation(fields: [usersId], references: [id])
   usersId      Int?
   uiKits       uiKits?
   transactions transactions[]
@@ -37,9 +37,10 @@ model templates {
   name                 String
   description          String
   integrationsTemplate templatesIntegration[]
-  users                users?              @relation(fields: [usersId], references: [id])
+  users                users?                 @relation(fields: [usersId], references: [id])
   usersId              Int?
   transactions         transactions[]
+  templatesPicture     String?
 }
 
 model transactions {
@@ -80,7 +81,7 @@ model category {
   name        String
   uiKits      uiKits?       @relation(fields: [kitsId], references: [id])
   kitsId      Int?
-  subCatgeory subCategory[]
+  subCategory subCategory[]
 }
 
 model subCategory {
@@ -93,13 +94,14 @@ model subCategory {
 }
 
 model components {
-  id            Int                     @id @default(autoincrement())
-  name          String
-  description   String
-  subCategory   subCategory?            @relation(fields: [subCategoryId], references: [id])
-  subCategoryId Int?
-  integrations  componentsIntegration[]
-  components    componentsMeta[]
+  id                Int                     @id @default(autoincrement())
+  name              String
+  description       String
+  subCategory       subCategory?            @relation(fields: [subCategoryId], references: [id])
+  subCategoryId     Int?
+  integrations      componentsIntegration[]
+  components        componentsMeta[]
+  componentsPicture String?
 }
 
 model componentsMeta {
@@ -125,3 +127,12 @@ model templatesIntegration {
   templates   templates? @relation(fields: [templatesId], references: [id])
   templatesId Int?
 }
+
+// model FileEntity {
+//   id         Int @default(autoincrement()) @id
+//   fileName   String
+//   fileUrl    String 
+//   key        String
+//   createdAt   DateTime @default(now())
+//   updatedAt   DateTime @updatedAt
+// }

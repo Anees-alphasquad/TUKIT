@@ -1,15 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ComponentsService } from './components.service';
 import { CreateComponentDto } from './dto/create-component.dto';
 import { UpdateComponentDto } from './dto/update-component.dto';
 
 @Controller('components')
+@UseInterceptors(FileInterceptor('compImg'))
 export class ComponentsController {
   constructor(private componentsService: ComponentsService) {}
 
   @Post()
-  create(@Body() createComponentDto: CreateComponentDto) {
-    return this.componentsService.create(createComponentDto);
+
+  create(@Body() createComponentDto: CreateComponentDto,
+  @UploadedFile()componentsPicture:Express.Multer.File) {
+    return this.componentsService.create(createComponentDto,componentsPicture);
   }
 
   @Get('all')

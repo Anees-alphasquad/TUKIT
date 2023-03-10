@@ -13,10 +13,12 @@ import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { TransactionsModule } from './transactions/transactions.module';
 import { StripeModule } from './stripe/stripe.module';
+import { TemplatesModule } from './templates/templates.module';
+import { BucketModule } from './bucket/bucket.module';
 
 
 @Module({
-  imports: [CategoryModule, PrismaModule, ComponentsModule, ComponentsMetaModule, ComponentsIntegrationModule, LicensesModule, SubCategoryModule, UsersModule, AuthModule,JwtModule, TransactionsModule, StripeModule],
+  imports: [CategoryModule, PrismaModule, ComponentsModule, ComponentsMetaModule, ComponentsIntegrationModule, LicensesModule, SubCategoryModule, UsersModule, AuthModule,JwtModule, TransactionsModule, StripeModule,TemplatesModule, BucketModule],
   controllers: [AppController],
   providers: [AppService],
 })
